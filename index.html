@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Pacifico&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --pink: #ff85a2; --light-pink: #ffe4e9; --dark-pink: #d6336c; }
-        body, html { margin: 0; padding: 0; width: 100%; font-family: 'Montserrat', sans-serif; overflow-x: hidden; background: var(--light-pink); }
+        body, html { margin: 0; padding: 0; width: 100%; font-family: 'Montserrat', sans-serif; overflow-x: hidden; background: var(--light-pink); scroll-behavior: smooth; }
         
         /* --- YANLARDA SÜZÜLEN KALPLER --- */
         .side-heart { position: fixed; bottom: -10%; font-size: 25px; animation: floatUp 6s linear infinite; opacity: 0.8; z-index: 1; pointer-events: none; }
@@ -20,7 +20,7 @@
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 182, 193, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            z-index: 1000; display: flex; justify-content: center; align-items: center;
+            z-index: 1000; display: flex; justify-content: center; align-items: center; transition: opacity 1s ease;
         }
         .login-box { text-align: center; background: white; padding: 40px; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: 2px solid var(--pink); z-index: 1001; }
         .login-box h2 { font-family: 'Pacifico', cursive; color: var(--pink); margin-bottom: 20px; }
@@ -48,19 +48,15 @@
         .quiz-section h3 { font-family: 'Pacifico', cursive; color: var(--pink); font-size: 2.5rem; text-align: center; padding: 0 25px; }
         .quiz-btn { background: var(--pink); color: white; padding: 18px 55px; border-radius: 35px; border: none; font-size: 1.4rem; cursor: pointer; margin-top: 40px; }
 
-        /* --- DİNAMİK FINAL --- */
-        #final-section { display: none; padding: 100px 10px 2000px 10px; }
-        .o-storm { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 5px; perspective: 1000px; }
-        .dynamic-o { color: var(--pink); font-weight: 900; animation: pulseO 2s infinite ease-in-out; display: inline-block; }
-        @keyframes pulseO {
-            0%, 100% { transform: scale(1) rotate(0deg); color: var(--pink); }
-            50% { transform: scale(1.5) rotate(10deg); color: var(--dark-pink); }
-        }
+        /* --- FINAL DÜZENİ (KASMAZ) --- */
+        #final-section { display: none; padding-top: 100px; padding-bottom: 100px; }
+        .o-row { display: flex; justify-content: space-around; align-items: center; width: 100%; margin: 40px 0; min-height: 50px; }
+        .static-o { color: var(--pink); font-weight: 900; display: inline-block; transition: color 0.3s; }
     </style>
 </head>
 <body>
 
-    <audio id="bgMusic" loop>
+    <audio id="bgMusic" loop preload="auto">
         <source src="sen-benim-sarkilarimsin.mp3" type="audio/mpeg">
     </audio>
 
@@ -95,13 +91,21 @@
         <div class="quiz-section" id="q5"><h3>Soru 5: Bu aşk biter mi?</h3><button class="quiz-btn" onclick="showFinal()">Asla! ❤️</button></div>
 
         <div id="final-section">
-            <h1 style="font-size: 4rem; color: var(--dark-pink); margin-bottom: 1000px;">SONUÇ :</h1>
-            <h2 style="font-size: 3rem; color: var(--pink);">Ç</h2>
-            <div class="o-storm" id="oContainer"></div>
+            <h1 style="font-size: 4rem; color: var(--dark-pink); margin-bottom: 500px;">SONUÇ :</h1>
+            <h2 style="font-size: 4rem; color: var(--pink); margin-bottom: 100px;">Ç</h2>
+            <div id="oContainer"></div>
         </div>
     </div>
 
     <script>
+        // Tarayıcı Ses Uyarısı
+        window.addEventListener('click', () => {
+            const music = document.getElementById('bgMusic');
+            if (music.paused && document.getElementById('main-content').style.display === 'block') {
+                music.play().catch(() => {});
+            }
+        }, { once: true });
+
         const hearts = ['❤️', '💖', '💗', '💓', '💞', '💕', '💘'];
         
         function createSideHeart() {
@@ -109,21 +113,32 @@
             heart.classList.add('side-heart');
             heart.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
             const isLeft = Math.random() > 0.5;
-            heart.style.left = isLeft ? (Math.random() * 15) + 'vw' : (Math.random() * 15 + 85) + 'vw';
+            heart.style.left = isLeft ? (Math.random() * 12) + 'vw' : (Math.random() * 12 + 88) + 'vw';
             heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
-            heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            heart.style.fontSize = (Math.random() * 15 + 20) + 'px';
             document.body.appendChild(heart);
             setTimeout(() => heart.remove(), 6000);
         }
 
         function unlock() {
-            if(document.getElementById('passInput').value === "7018") {
-                document.getElementById('login-screen').style.display = 'none';
+            if (document.getElementById('passInput').value === "7018") {
+                document.getElementById('login-screen').style.opacity = '0';
+                setTimeout(() => { document.getElementById('login-screen').style.display = 'none'; }, 1000);
                 document.getElementById('main-content').style.display = 'block';
-                document.getElementById('bgMusic').play().catch(() => {});
-                setInterval(createSideHeart, 400);
+                document.getElementById('bgMusic').play().catch(() => { createManualPlayButton(); });
+                setInterval(createSideHeart, 500);
                 startTimer();
             } else { alert("Yanlış şifre birtanem! 🥺"); }
+        }
+
+        function createManualPlayButton() {
+            if (document.getElementById('manualBtn')) return;
+            const btn = document.createElement('div');
+            btn.id = 'manualBtn';
+            btn.innerHTML = '🎵 Müzik ❤️';
+            btn.style.cssText = 'position:fixed; bottom:20px; right:20px; background:var(--pink); color:white; padding:12px 20px; border-radius:30px; z-index:9999; cursor:pointer; font-weight:bold;';
+            btn.onclick = function() { document.getElementById('bgMusic').play(); this.remove(); };
+            document.body.appendChild(btn);
         }
 
         function startTimer() {
@@ -148,17 +163,29 @@
 
         function startQuiz() { document.getElementById('q1').style.display = 'flex'; window.scrollTo(0, document.getElementById('q1').offsetTop); }
         function nextQ(c, n) { document.getElementById(c).style.display = 'none'; document.getElementById(n).style.display = 'flex'; }
+        
         function showFinal() {
             document.getElementById('q5').style.display = 'none';
             document.getElementById('final-section').style.display = 'block';
             const container = document.getElementById('oContainer');
-            for(let i=0; i<800; i++) {
-                const o = document.createElement('span');
-                o.classList.add('dynamic-o');
-                o.innerText = 'O';
-                o.style.fontSize = (Math.random() * 40 + 10) + 'px';
-                o.style.animationDelay = (Math.random() * 2) + 's';
-                container.appendChild(o);
+            
+            // Toplam 150 "satır" oluşturuyoruz (Aşağı kaydırdıkça çoğalacak)
+            for(let i=0; i<150; i++) {
+                const row = document.createElement('div');
+                row.className = 'o-row';
+                
+                // İlk satırlarda 1-2, sonlara doğru 5-8 adet "O" (Yoğunluk artıyor)
+                const count = Math.floor(Math.random() * (i/15 + 2)) + 1; 
+                
+                for(let j=0; j<count; j++) {
+                    const o = document.createElement('span');
+                    o.className = 'static-o';
+                    o.innerText = 'O';
+                    // Farklı ama sabit boyutlar (Kasmayı engeller)
+                    o.style.fontSize = (Math.random() * (i/3 + 15) + 10) + 'px'; 
+                    row.appendChild(o);
+                }
+                container.appendChild(row);
             }
         }
     </script>
